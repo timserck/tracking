@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<!-- saved from url=(0061)http://auduno.github.io/headtrackr/examples/facetracking.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>facetracking</title>
+		<meta http-equiv="X-UA-Compatible" content="IE=Edge">
+		<meta charset="utf-8">
+		<style>
+			html,body, header {
+				
+				height: 100%;
+				width: 100%;
+				margin: 0;
+				padding: 0;
+				font-family: "Helvetica", Arial, Serif;
+				position: relative;
+			}
+
+			video, canvas{
+				position: absolute;
+				left: 0;
+				top:0;
+				height: 100%;
+				width: 100%;
+				margin: 0;
+				padding: 0;
+
+			}
+
+
+			@media (min-aspect-ratio: 16/9) {
+  video {
+    height: 300%;
+    top: -100%;
+    /* Ou bien height: 200%; top: -50%; */
+    /* Ou bien height: 400%; top: -150%; */
+  }
+}
+@media (max-aspect-ratio: 16/9) {
+  video {
+    width: 300%;
+    left: -100%;
+    /* Ou bien width: 200%; left: -50%; */
+    /* Ou bien width: 400%; left: -150%; */
+  }
+}
+
+@supports (object-fit: cover) {
+ video {
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    object-fit: cover;
+  }
+}
+
+
+		</style>
+	
+	</head>
+	<body>
+		
+		<header>
+			<canvas id="compare" width="320" height="240" style="display:none"></canvas>
+			<video id="vid" autoplay="" loop="" width="320" height="240" src="blob:http%3A//auduno.github.io/e1e677d2-c1b4-46fe-9486-0a62b3d4da08"></video>
+			<canvas id="overlay" width="320" height="240" style="position: absolute; top: 0px; z-index: 100001; display: block;"></canvas>
+			<canvas id="debug" width="320" height="240" style="position: absolute; top: 0px; z-index: 100002; display: none;"></canvas>
+		</header>
+		<script src="./facetracking_files/headtrackr.js"></script>
+		
+		<script>
+		  // set up video and canvas elements needed
+		
+			var videoInput = document.getElementById('vid');
+			var canvasInput = document.getElementById('compare');
+			var canvasOverlay = document.getElementById('overlay')
+			var debugOverlay = document.getElementById('debug');
+			var overlayContext = canvasOverlay.getContext('2d');
+			canvasOverlay.style.position = "absolute";
+			canvasOverlay.style.top = '0px';
+			canvasOverlay.style.zIndex = '100001';
+			canvasOverlay.style.display = 'block';
+			debugOverlay.style.position = "absolute";
+			debugOverlay.style.top = '0px';
+			debugOverlay.style.zIndex = '100002';
+			debugOverlay.style.display = 'none';
+			
+
+			// the face tracking setup
+			
+			var htracker = new headtrackr.Tracker({altVideo : {ogv : "./media/capture5.ogv", mp4 : "./media/capture5.mp4"}, calcAngles : true, ui : false, headPosition : false, debug : debugOverlay});
+			htracker.init(videoInput, canvasInput);
+			htracker.start();
+			
+
+
+			// for each facetracking event received draw rectangle around tracked face on canvas
+			
+			document.addEventListener("facetrackingEvent", function( event ) {
+				// clear canvas
+				overlayContext.clearRect(0,0,370,240);
+				// once we have stable tracking, draw rectangle
+				if (event.detection == "CS") {
+					 
+					overlayContext.translate(event.x, event.y)
+					overlayContext.rotate(event.angle-(Math.PI/2));
+					overlayContext.strokeStyle = "transparent";
+					overlayContext.strokeRect((-(event.width/2)) >> 0, (-(event.height/2)) >> 0, event.width, event.height);
+					overlayContext.fillStyle="red";
+					overlayContext.fillRect((-(event.width/2)),(-(event.height/2)),event.width,(event.height/2.5));
+					overlayContext.fill();
+					overlayContext.rotate((Math.PI/2)-event.angle);
+					overlayContext.translate(-event.x, -event.y);
+
+					
+
+				}
+			});
+			
+		</script>
+	
+
+</body></html>
